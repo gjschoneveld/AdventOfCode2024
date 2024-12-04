@@ -5,6 +5,9 @@ var grid = File.ReadAllLines("input.txt");
 var answer1 = CountWord(grid, "XMAS");
 Console.WriteLine($"Answer 1: {answer1}");
 
+var answer2 = CountCrossWord(grid, "MAS");
+Console.WriteLine($"Answer 2: {answer2}");
+
 int CountWord(string[] grid, string word)
 {
     var result = 0;
@@ -13,15 +16,32 @@ int CountWord(string[] grid, string word)
     {
         for (int x = 0; x < grid[y].Length; x++)
         {
-            var words = ExtractWords(grid, (x, y), word.Length);
-            result += words.Count(w => w == word);
+            result += CountWordAtPosition(grid, (x, y), word);
         }
     }
 
     return result;
 }
 
-List<string> ExtractWords(string[] grid, Point start, int count)
+int CountCrossWord(string[] grid, string word)
+{
+    var result = 0;
+
+    for (int y = 0; y < grid.Length; y++)
+    {
+        for (int x = 0; x < grid[y].Length; x++)
+        {
+            if (MatchesCrossWord(grid, (x, y), word))
+            {
+                result++;
+            }
+        }
+    }
+
+    return result;
+}
+
+int CountWordAtPosition(string[] grid, Point start, string word)
 {
     List<Direction> directions =
     [
@@ -32,10 +52,21 @@ List<string> ExtractWords(string[] grid, Point start, int count)
         Direction.East,
         Direction.SouthWest,
         Direction.South,
-        Direction.SoutEast
+        Direction.SouthEast
     ];
 
-    return directions.Select(d => ExtractWord(grid, start, d, count)).ToList();
+    return directions.Count(d => MatchesWord(grid, start, d, word));
+}
+
+bool MatchesCrossWord(string[] grid, Point start, string word)
+{
+    Point southEast = (start.X + word.Length - 1, start.Y + word.Length - 1);
+
+    Point northEast = (start.X + word.Length - 1, start.Y);
+    Point southWest = (start.X, start.Y + word.Length - 1);
+
+    return (MatchesWord(grid, start, Direction.SouthEast, word) || MatchesWord(grid, southEast, Direction.NorthWest, word)) &&
+        (MatchesWord(grid, northEast, Direction.SouthWest, word) || MatchesWord(grid, southWest, Direction.NorthEast, word));
 }
 
 bool IsValidPosition(string[] grid, Point position)
@@ -47,7 +78,7 @@ bool IsValidPosition(string[] grid, Point position)
         0 <= position.Y && position.Y < maxY;
 }
 
-string ExtractWord(string[] grid, Point start, Direction direction, int count)
+bool MatchesWord(string[] grid, Point start, Direction direction, string word)
 {
     Point delta = direction switch
     {
@@ -58,25 +89,21 @@ string ExtractWord(string[] grid, Point start, Direction direction, int count)
         Direction.East => (1, 0),
         Direction.SouthWest => (-1, 1),
         Direction.South => (0, 1),
-        Direction.SoutEast => (1, 1),
+        Direction.SouthEast => (1, 1),
         _ => throw new()
     };
 
-    var result = "";
-
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < word.Length; i++)
     {
         Point position = (start.X + i * delta.X, start.Y + i * delta.Y);
 
-        if (!IsValidPosition(grid, position))
+        if (!IsValidPosition(grid, position) || grid[position.Y][position.X] != word[i])
         {
-            break;
+            return false;
         }
-
-        result += grid[position.Y][position.X];
     }
 
-    return result;
+    return true;
 }
 
 enum Direction
@@ -88,5 +115,5 @@ enum Direction
     East,
     SouthWest,
     South,
-    SoutEast
+    SouthEast
 }
