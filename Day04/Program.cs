@@ -71,11 +71,11 @@ bool MatchesCrossWord(string[] grid, Point start, string word)
 
 bool IsValidPosition(string[] grid, Point position)
 {
-    var maxX = grid[0].Length;
-    var maxY = grid.Length;
+    var lengthX = grid[0].Length;
+    var lengthY = grid.Length;
 
-    return 0 <= position.X && position.X < maxX &&
-        0 <= position.Y && position.Y < maxY;
+    return 0 <= position.X && position.X < lengthX &&
+        0 <= position.Y && position.Y < lengthY;
 }
 
 bool MatchesWord(string[] grid, Point start, Direction direction, string word)
