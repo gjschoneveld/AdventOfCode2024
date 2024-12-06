@@ -58,13 +58,13 @@ Console.WriteLine($"Answer 2: {answer2}");
     return (visited.Contains(guard), visited.Select(g => g.Position).Distinct().Count());
 }
 
-Point Find(Map map, char type)
+Point Find(Map map, char symbol)
 {
     for (int y = 0; y < map.Count; y++)
     {
         for (int x = 0; x < map[y].Count; x++)
         {
-            if (map[y][x] == type)
+            if (map[y][x] == symbol)
             {
                 return (x, y);
             }
