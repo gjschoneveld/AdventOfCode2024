@@ -57,25 +57,25 @@ Console.WriteLine($"Answer 2: {answer2}");
         guard = (next, guard.Direction);
     }
 
-	return (visited.Contains(guard), visited.Select(g => g.Position).Distinct().Count());
+    return (visited.Contains(guard), visited.Select(g => g.Position).Distinct().Count());
 }
 
 HashSet<Point> Find(string[] map, char type)
 {
     var result = new HashSet<Point>();
 
-	for (int y = 0; y < map.Length; y++)
-	{
-		for (int x = 0; x < map[y].Length; x++)
-		{
-			if (map[y][x] == type)
-			{
-				result.Add((x, y));
-			}
-		}
-	}
+    for (int y = 0; y < map.Length; y++)
+    {
+        for (int x = 0; x < map[y].Length; x++)
+        {
+            if (map[y][x] == type)
+            {
+                result.Add((x, y));
+            }
+        }
+    }
 
-	return result;
+    return result;
 }
 
 bool IsValid(string[] map, Point position)
@@ -83,8 +83,8 @@ bool IsValid(string[] map, Point position)
     var lengthX = map[0].Length;
     var lengthY = map.Length;
 
-	return 0 <= position.X && position.X < lengthX &&
-		0 <= position.Y && position.Y < lengthY;
+    return 0 <= position.X && position.X < lengthX &&
+        0 <= position.Y && position.Y < lengthY;
 }
 
 Point Step(Point position, Direction direction)
@@ -102,20 +102,20 @@ Point Step(Point position, Direction direction)
 
 Direction TurnRight(Direction direction)
 {
-	return direction switch
-	{
-		Direction.Up => Direction.Right,
-		Direction.Down => Direction.Left,
-		Direction.Left => Direction.Up,
-		Direction.Right => Direction.Down,
-		_ => throw new()
-	};
+    return direction switch
+    {
+        Direction.Up => Direction.Right,
+        Direction.Down => Direction.Left,
+        Direction.Left => Direction.Up,
+        Direction.Right => Direction.Down,
+        _ => throw new()
+    };
 }
 
 enum Direction
 {
-	Up,
-	Down,
-	Left,
-	Right
+    Up,
+    Down,
+    Left,
+    Right
 }
