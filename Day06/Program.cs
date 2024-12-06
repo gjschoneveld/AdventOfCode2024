@@ -1,43 +1,41 @@
-﻿using Point = (int X, int Y);
+﻿using Map = System.Collections.Generic.List<System.Collections.Generic.List<char>>;
+using Point = (int X, int Y);
 
-var map = File.ReadAllLines("input.txt");
+var map = File.ReadAllLines("input.txt").Select(x => x.ToList()).ToList();
+var guard = (Position: Find(map, '^'), Direction: Direction.Up);
 
-var obstructions = Find(map, '#');
-var guard = (Position: Find(map, '^').Single(), Direction: Direction.Up);
-
-var route = Walk(map, obstructions, guard);
-
+var route = Walk(map, guard);
 var answer1 = route.Visited;
 Console.WriteLine($"Answer 1: {answer1}");
 
 var positions = 0;
 
-for (int y = 0; y < map.Length; y++)
+for (int y = 0; y < map.Count; y++)
 {
-    for (int x = 0; x < map[y].Length; x++)
+    for (int x = 0; x < map[y].Count; x++)
     {
         if (map[y][x] != '.')
         {
             continue;
         }
 
-        obstructions.Add((x, y));
+        map[y][x] = '#';
 
-        route = Walk(map, obstructions, guard);
+        route = Walk(map, guard);
 
         if (route.Loop)
         {
             positions++;
         }
 
-        obstructions.Remove((x, y));
+        map[y][x] = '.';
     }
 }
 
 var answer2 = positions;
 Console.WriteLine($"Answer 2: {answer2}");
 
-(bool Loop, int Visited) Walk(string[] map, HashSet<Point> obstructions, (Point Position, Direction Direction) guard)
+(bool Loop, int Visited) Walk(Map map, (Point Position, Direction Direction) guard)
 {
     var visited = new HashSet<(Point Position, Direction Direction)>();
 
@@ -47,7 +45,7 @@ Console.WriteLine($"Answer 2: {answer2}");
 
         var next = Step(guard.Position, guard.Direction);
 
-        if (obstructions.Contains(next))
+        if (IsValid(map, next) && map[next.Y][next.X] == '#')
         {
             guard = (guard.Position, TurnRight(guard.Direction));
 
@@ -60,28 +58,26 @@ Console.WriteLine($"Answer 2: {answer2}");
     return (visited.Contains(guard), visited.Select(g => g.Position).Distinct().Count());
 }
 
-HashSet<Point> Find(string[] map, char type)
+Point Find(Map map, char type)
 {
-    var result = new HashSet<Point>();
-
-    for (int y = 0; y < map.Length; y++)
+    for (int y = 0; y < map.Count; y++)
     {
-        for (int x = 0; x < map[y].Length; x++)
+        for (int x = 0; x < map[y].Count; x++)
         {
             if (map[y][x] == type)
             {
-                result.Add((x, y));
+                return (x, y);
             }
         }
     }
 
-    return result;
+    throw new();
 }
 
-bool IsValid(string[] map, Point position)
+bool IsValid(Map map, Point position)
 {
-    var lengthX = map[0].Length;
-    var lengthY = map.Length;
+    var lengthX = map[0].Count;
+    var lengthY = map.Count;
 
     return 0 <= position.X && position.X < lengthX &&
         0 <= position.Y && position.Y < lengthY;
@@ -97,7 +93,6 @@ Point Step(Point position, Direction direction)
         Direction.Right => (position.X + 1, position.Y),
         _ => throw new()
     };
-
 }
 
 Direction TurnRight(Direction direction)
