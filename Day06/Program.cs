@@ -5,37 +5,13 @@ var map = File.ReadAllLines("input.txt").Select(x => x.ToList()).ToList();
 var guard = (Position: Find(map, '^'), Direction: Direction.Up);
 
 var route = Walk(map, guard);
-var answer1 = route.Visited;
+var answer1 = route.Visited.Count;
 Console.WriteLine($"Answer 1: {answer1}");
 
-var positions = 0;
-
-for (int y = 0; y < map.Count; y++)
-{
-    for (int x = 0; x < map[y].Count; x++)
-    {
-        if (map[y][x] != '.')
-        {
-            continue;
-        }
-
-        map[y][x] = '#';
-
-        route = Walk(map, guard);
-
-        if (route.Loop)
-        {
-            positions++;
-        }
-
-        map[y][x] = '.';
-    }
-}
-
-var answer2 = positions;
+var answer2 = route.Visited.Where(p => map[p.Y][p.X] == '.').Count(p => Walk(map, guard, p).Loop);
 Console.WriteLine($"Answer 2: {answer2}");
 
-(bool Loop, int Visited) Walk(Map map, (Point Position, Direction Direction) guard)
+(bool Loop, List<Point> Visited) Walk(Map map, (Point Position, Direction Direction) guard, Point? obstruction = null)
 {
     var visited = new HashSet<(Point Position, Direction Direction)>();
 
@@ -45,7 +21,7 @@ Console.WriteLine($"Answer 2: {answer2}");
 
         var next = Step(guard.Position, guard.Direction);
 
-        if (IsValid(map, next) && map[next.Y][next.X] == '#')
+        if (IsValid(map, next) && (map[next.Y][next.X] == '#' || next == obstruction))
         {
             guard = (guard.Position, TurnRight(guard.Direction));
 
@@ -55,19 +31,18 @@ Console.WriteLine($"Answer 2: {answer2}");
         guard = (next, guard.Direction);
     }
 
-    return (visited.Contains(guard), visited.Select(g => g.Position).Distinct().Count());
+    return (visited.Contains(guard), visited.Select(g => g.Position).Distinct().ToList());
 }
 
 Point Find(Map map, char symbol)
 {
     for (int y = 0; y < map.Count; y++)
     {
-        for (int x = 0; x < map[y].Count; x++)
+        var x = map[y].IndexOf(symbol);
+
+        if (x >= 0)
         {
-            if (map[y][x] == symbol)
-            {
-                return (x, y);
-            }
+            return (x, y);
         }
     }
 
