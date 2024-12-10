@@ -14,18 +14,18 @@ List<Point> GetTrailHeads(Map map)
 {
     var result = new List<Point>();
 
-	for (int y = 0; y < map.Length; y++)
-	{
-		for (int x = 0; x < map[y].Length; x++)
-		{
-			if (map[y][x] == '0')
-			{
-				result.Add((x, y));
-			}
-		}
-	}
+    for (int y = 0; y < map.Length; y++)
+    {
+        for (int x = 0; x < map[y].Length; x++)
+        {
+            if (map[y][x] == '0')
+            {
+                result.Add((x, y));
+            }
+        }
+    }
 
-	return result;
+    return result;
 }
 
 int GetScore(Map map, Point start, bool part2)
@@ -46,10 +46,10 @@ int GetScore(Map map, Point start, bool part2)
             .Where(nb => IsValid(map, nb) && map[nb.Y][nb.X] == symbol)
             .ToList();
 
-		if (!part2)
-		{
-			positions = positions.Distinct().ToList();
-		}
+        if (!part2)
+        {
+            positions = positions.Distinct().ToList();
+        }
     }
 
     return positions.Count;
@@ -57,12 +57,12 @@ int GetScore(Map map, Point start, bool part2)
 
 List<Point> Neighbours(Point position)
 {
-	return [
-		(position.X - 1, position.Y),
+    return [
+        (position.X - 1, position.Y),
         (position.X + 1, position.Y),
         (position.X, position.Y - 1),
         (position.X, position.Y + 1)
-	];
+    ];
 }
 
 bool IsValid(Map map, Point position)
