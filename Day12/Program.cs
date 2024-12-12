@@ -3,6 +3,14 @@ using Point = (int X, int Y);
 
 Map map = File.ReadAllLines("input.txt");
 
+var directions = new List<Direction>
+{
+    Direction.North,
+    Direction.South,
+    Direction.West,
+    Direction.East
+};
+
 var totalPrice = 0;
 var discountedPrice = 0;
 var visited = new HashSet<Point>();
@@ -19,33 +27,20 @@ for (int y = 0; y < map.Length; y++)
         var symbol = map[y][x];
         var area = 0;
 
-        var toVisit = new Queue<Point>();
-        toVisit.Enqueue((x, y));
-
+        var toVisit = new HashSet<Point> { (x, y) };
         var edges = new List<(Point Position, Direction Direction)>();
 
         while(toVisit.Count > 0)
         {
-            var current = toVisit.Dequeue();
+            var current = toVisit.First();
+            toVisit.Remove(current);
             visited.Add(current);
 
             var neighbours = Neighbours(current).Where(nb => IsValid(map, nb.Position) && map[nb.Position.Y][nb.Position.X] == symbol).ToList();
-
-            var directions = new List<Direction>
-            {
-                Direction.North,
-                Direction.South,
-                Direction.West,
-                Direction.East
-            };
+            toVisit.UnionWith(neighbours.Select(nb => nb.Position).Where(p => !visited.Contains(p) && !toVisit.Contains(p)));
 
             edges.AddRange(directions.Where(d => !neighbours.Any(nb => nb.Direction == d)).Select(d => (current, d)));
             area++;
-
-            foreach (var nb in neighbours.Where(nb => !visited.Contains(nb.Position) && !toVisit.Contains(nb.Position)))
-            {
-                toVisit.Enqueue(nb.Position);
-            }
         }
 
         totalPrice += area * edges.Count;
