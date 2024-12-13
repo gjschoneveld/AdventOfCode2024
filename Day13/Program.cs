@@ -1,7 +1,7 @@
 ﻿using Point = (long X, long Y);
 
 var input = File.ReadAllLines("input.txt");
-var machines = Partitionize(input).Select(Machine.Parse).ToList();
+var machines = Group(input).Select(Machine.Parse).ToList();
 
 var answer1 = machines.Sum(m => m.TokensNeeded());
 Console.WriteLine($"Answer 1: {answer1}");
@@ -9,17 +9,17 @@ Console.WriteLine($"Answer 1: {answer1}");
 var answer2 = machines.Sum(m => m.TokensNeededRaisedPrize());
 Console.WriteLine($"Answer 2: {answer2}");
 
-List<List<string>> Partitionize(string[] input)
+static List<List<string>> Group(string[] input)
 {
-    var result = new List<List<string>>();
-    var current = new List<string>();
+    List<List<string>> result = [];
+    List<string> current = [];
 
     foreach (var line in input)
     {
         if (line == "")
         {
             result.Add(current);
-            current = new List<string>();
+            current = [];
 
             continue;
         }
@@ -40,7 +40,7 @@ class Machine
     public Point Prize { get; set; }
     public Point RaisedPrize => (Prize.X + Raise, Prize.Y + Raise);
 
-    public long Raise => 10000000000000;
+    public static long Raise => 10000000000000;
 
     public int TokensNeeded()
     {
@@ -102,18 +102,13 @@ class Machine
         return 3 * a + b;
     }
 
-    public static int ToInt(List<char> digits)
-    {
-        return digits.Select(c => c - '0').Aggregate((a, b) => a * 10 + b);
-    }
-
     public static Point FindNumbers(string line)
     {
-        var interesting = line.Where(c => char.IsDigit(c) || c == ',').ToList();
-        var comma = interesting.IndexOf(',');
+        var interesting = line.Where(c => char.IsDigit(c) || c == ',').ToArray();
+        var comma = Array.IndexOf(interesting, ',');
 
-        var x = ToInt(interesting[..comma]);
-        var y = ToInt(interesting[(comma + 1)..]);
+        var x = int.Parse(new string(interesting[..comma]));
+        var y = int.Parse(new string(interesting[(comma + 1)..]));
 
         return (x, y);
     }
