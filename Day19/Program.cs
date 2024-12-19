@@ -2,21 +2,27 @@
 var patterns = input[0].Split(", ").ToList();
 var designs = input[2..];
 
-var answer1 = designs.Count(d => IsValid(patterns, [], d, 0));
+var ways = designs.Select(d => CountDifferentWays(patterns, [], d, 0)).ToList();
+
+var answer1 = ways.Count(w => w > 0);
 Console.WriteLine($"Answer 1: {answer1}");
 
-static bool IsValid(List<string> patterns, HashSet<int> invalid, string design, int index)
+var answer2 = ways.Sum();
+Console.WriteLine($"Answer 2: {answer2}");
+
+static long CountDifferentWays(List<string> patterns, Dictionary<int, long> cache, string design, int index)
 {
     if (index == design.Length)
     {
-        return true;
+        return 1;
     }
 
-    if (invalid.Contains(index))
+    if (cache.ContainsKey(index))
     {
-        return false;
+        return cache[index];
     }
 
+    var ways = 0L;
     var maxLength = design.Length - index;
 
     foreach (var pattern in patterns)
@@ -33,13 +39,10 @@ static bool IsValid(List<string> patterns, HashSet<int> invalid, string design, 
             continue;
         }
 
-        if (IsValid(patterns, invalid, design, index + pattern.Length))
-        {
-            return true;
-        }            
+        ways += CountDifferentWays(patterns, cache, design, index + pattern.Length);        
     }
 
-    invalid.Add(index);
+    cache[index] = ways;
 
-    return false;
+    return ways;
 }
