@@ -10,39 +10,79 @@ foreach (var (state, node) in nodes)
     WalkToNext(map, nodes, node);
 }
 
-var answer1 = FindRoute(nodes);
+var start = nodes.Single(n => n.Value.Type == Type.Start).Value;
+var end = nodes.Where(n => n.Value.Type == Type.End).Select(n => n.Value).ToList();
+var best = FindRoute(nodes, start, end);
+
+var answer1 = best;
 Console.WriteLine($"Answer 1: {answer1}");
 
-int FindRoute(Dictionary<State, Node> nodes)
+var optimalNodes = new HashSet<Node>();
+optimalNodes.UnionWith(end.Where(n => n.Score == best));
+optimalNodes.Add(start);
+
+foreach (var (_, node) in nodes.Where(kv => kv.Value.Type == Type.Regular))
 {
+    var route = FindRoute(nodes, start, [node]) + FindRoute(nodes, node, end);
+
+    if (route == best)
+    {
+        optimalNodes.Add(node);
+    }
+}
+
+// recalculate optimal scores
+FindRoute(nodes, start, end);
+
+var tiles = optimalNodes.Select(n => n.Position).Distinct().Count();
+
+foreach (var node in optimalNodes)
+{
+    foreach (var (adjacent, delta) in node.Adjacent)
+    {
+        if (optimalNodes.Contains(adjacent) && adjacent.Score - node.Score == delta.Score)
+        {
+            tiles += delta.Tiles;
+        }
+    }
+}
+
+var answer2 = tiles;
+Console.WriteLine($"Answer 2: {answer2}");
+
+int FindRoute(Dictionary<State, Node> nodes, Node start, List<Node> end)
+{
+    foreach (var (_, node) in nodes)
+    {
+        node.Score = null;
+    }
+
     var reachable = new Dictionary<State, int>
     {
-        { nodes.Single(n => n.Value.Type == Type.Start).Value.State, 0 }
+        { start.State, 0 }
     };
 
-    while (true)
+    while (reachable.Count > 0)
     {
-        var (state, distance) = reachable.OrderBy(kv => kv.Value).First();
-        nodes[state].Distance = distance;
+        var (state, score) = reachable.MinBy(kv => kv.Value);
+
+        nodes[state].Score = score;
         reachable.Remove(state);
 
-        if (nodes[state].Type == Type.End)
-        {
-            return distance;
-        }
-        
-        var toVisit = nodes[state].Adjacent.Where(kv => kv.Key.Distance == null).ToList();
+        var toVisit = nodes[state].Adjacent.Where(kv => kv.Key.Score == null).ToList();
 
         foreach (var (node, delta) in toVisit)
         {
-            var newDistance = distance + delta;
+            var newScore = score + delta.Score;
 
-            if (!reachable.ContainsKey(node.State) || reachable[node.State] > newDistance)
+            if (!reachable.ContainsKey(node.State) || reachable[node.State] > newScore)
             {
-                reachable[node.State] = newDistance;
+                reachable[node.State] = newScore;
             }
         }
     }
+
+    return (int)end.Min(n => n.Score)!;
 }
 
 void WalkToNext(Map map, Dictionary<State, Node> nodes, Node node)
@@ -59,6 +99,7 @@ void WalkToNext(Map map, Dictionary<State, Node> nodes, Node node)
     var previous = current;
     current = next;
     var score = 1;
+    var tiles = 0;
 
     while (!nodes.ContainsKey(current))
     {
@@ -71,6 +112,7 @@ void WalkToNext(Map map, Dictionary<State, Node> nodes, Node node)
         }
 
         score++;
+        tiles++;
 
         if (current.Direction != next.Direction)
         {
@@ -81,7 +123,7 @@ void WalkToNext(Map map, Dictionary<State, Node> nodes, Node node)
         current = next;
     }
 
-    node.Adjacent[nodes[current]] = score;
+    node.Adjacent[nodes[current]] = (score, tiles);
 }
 
 Dictionary<State, Node> FindNodes(Map map)
@@ -124,14 +166,14 @@ Dictionary<State, Node> FindNodes(Map map)
                     Type = symbol == 'S' ? Type.Start : symbol == 'E' ? Type.End : Type.Regular
                 };
 
-                up.Adjacent[left] = 1000;
-                up.Adjacent[right] = 1000;
-                down.Adjacent[left] = 1000;
-                down.Adjacent[right] = 1000;
-                left.Adjacent[up] = 1000;
-                left.Adjacent[down] = 1000;
-                right.Adjacent[up] = 1000;
-                right.Adjacent[down] = 1000;
+                up.Adjacent[left] = (1000, 0);
+                up.Adjacent[right] = (1000, 0);
+                down.Adjacent[left] = (1000, 0);
+                down.Adjacent[right] = (1000, 0);
+                left.Adjacent[up] = (1000, 0);
+                left.Adjacent[down] = (1000, 0);
+                right.Adjacent[up] = (1000, 0);
+                right.Adjacent[down] = (1000, 0);
 
                 result[(up.Position, up.Direction)] = up;
                 result[(down.Position, down.Direction)] = down;
@@ -179,8 +221,8 @@ class Node
     public Type Type;
     public Point Position { get; set; }
     public Direction Direction { get; set; }
-    public Dictionary<Node, int> Adjacent { get; set; } = [];
-    public int? Distance { get; set; }
+    public Dictionary<Node, (int Score, int Tiles)> Adjacent { get; set; } = [];
+    public int? Score { get; set; }
 
     public State State => (Position, Direction);
 }
