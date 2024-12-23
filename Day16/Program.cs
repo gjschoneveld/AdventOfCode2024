@@ -57,28 +57,23 @@ int FindRoute(Dictionary<State, Node> nodes, Node start, List<Node> end)
         node.Score = null;
     }
 
-    var reachable = new Dictionary<State, int>
-    {
-        { start.State, 0 }
-    };
+    var reachable = new PriorityQueue<State, int>();
+    reachable.Enqueue(start.State, 0);
 
     while (reachable.Count > 0)
     {
-        var (state, score) = reachable.MinBy(kv => kv.Value);
+        reachable.TryDequeue(out State state, out int score);
+
+        if (nodes[state].Score != null)
+        {
+            continue;
+        }
 
         nodes[state].Score = score;
-        reachable.Remove(state);
 
-        var toVisit = nodes[state].Adjacent.Where(kv => kv.Key.Score == null).ToList();
-
-        foreach (var (node, delta) in toVisit)
+        foreach (var (node, delta) in nodes[state].Adjacent)
         {
-            var newScore = score + delta.Score;
-
-            if (!reachable.ContainsKey(node.State) || reachable[node.State] > newScore)
-            {
-                reachable[node.State] = newScore;
-            }
+            reachable.Enqueue(node.State, score + delta.Score);
         }
     }
 
