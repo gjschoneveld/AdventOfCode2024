@@ -9,12 +9,24 @@ var count = example ? 12 : 1024;
 var answer1 = Steps([.. positions[..count]], max);
 Console.WriteLine($"Answer 1: {answer1}");
 
-while (Steps([.. positions[..count]], max) != null)
+var left = count;
+var right = positions.Count;
+
+while (left < right)
 {
-    count++;
+    var middle = (left + right + 1) / 2;
+
+    if (Steps([.. positions[..middle]], max) == null)
+    {
+        right = middle - 1;
+    }
+    else
+    {
+        left = middle;
+    }
 }
 
-var answer2 = input[count - 1];
+var answer2 = input[left];
 Console.WriteLine($"Answer 2: {answer2}");
 
 int? Steps(HashSet<Point> corrupt, int max)
