@@ -24,7 +24,7 @@ long FindLowestTotalComplexity(string[] input, int robots)
 
     foreach (var line in input)
     {
-        var length = FindShortestPath([.. line], keypads);
+        var length = FindShortestPath([.. line], keypads, []);
         var complexity = length * Value(line);
 
         totalComplexity += complexity;
@@ -33,31 +33,37 @@ long FindLowestTotalComplexity(string[] input, int robots)
     return totalComplexity;
 }
 
-long FindShortestPath(List<char> buttons, List<Keypad> keypads)
+long FindShortestPath(List<char> buttons, List<Keypad> keypads, Dictionary<(string Buttons, int Keypads), long> cache)
 {
     if (keypads.Count == 0)
     {
         return buttons.Count;
     }
 
+    var state = (new string([.. buttons]), keypads.Count);
+
+    if (cache.TryGetValue(state, out long cached))
+    {
+        return cached;
+    }
+
     var total = 0L;
 
     foreach (var button in buttons)
     {
-        var minimal = long.MaxValue;
-
         var paths = keypads[0].Press(button);
+        var minimal = long.MaxValue;
 
         foreach (var path in paths)
         {
-            var length = FindShortestPath(path, keypads[1..]);
+            var length = FindShortestPath(path, keypads[1..], cache);
             minimal = Math.Min(minimal, length);
         }
 
         total += minimal;
     }
 
-    return total;
+    return cache[state] = total;
 }
 
 static int Value(string line)
@@ -75,10 +81,10 @@ abstract class Keypad
     {
         if (start == end)
         {
-            return new List<List<char>>
-            {
-                new List<char>()
-            };
+            return
+            [
+                []
+            ];
         }
 
         var result = new List<List<char>>();
@@ -200,3 +206,4 @@ class DirectionalKeypad : Keypad
         Position = Buttons['A'];
     }
 }
+
