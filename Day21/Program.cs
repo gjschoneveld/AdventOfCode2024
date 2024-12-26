@@ -2,33 +2,49 @@
 
 var input = File.ReadAllLines("input.txt");
 
-var totalComplexity = 0;
-
-foreach (var line in input)
-{
-    var length = FindShortestPath([.. line], [new NumericKeypad(), new DirectionalKeypad(), new DirectionalKeypad()]);
-    var complexity = length * Value(line);
-
-    Console.WriteLine($"{length} * {Value(line)}");
-
-    totalComplexity += complexity;
-}
-
-var answer1 = totalComplexity;
+var answer1 = FindLowestTotalComplexity(input, 2);
 Console.WriteLine($"Answer 1: {answer1}");
 
-int FindShortestPath(List<char> buttons, List<Keypad> keypads)
+var answer2 = FindLowestTotalComplexity(input, 25);
+Console.WriteLine($"Answer 2: {answer2}");
+
+long FindLowestTotalComplexity(string[] input, int robots)
+{
+    var keypads = new List<Keypad>
+    {
+        new NumericKeypad()
+    };
+
+    for (int i = 0; i < robots; i++)
+    {
+        keypads.Add(new DirectionalKeypad());
+    }
+
+    var totalComplexity = 0L;
+
+    foreach (var line in input)
+    {
+        var length = FindShortestPath([.. line], keypads);
+        var complexity = length * Value(line);
+
+        totalComplexity += complexity;
+    }
+
+    return totalComplexity;
+}
+
+long FindShortestPath(List<char> buttons, List<Keypad> keypads)
 {
     if (keypads.Count == 0)
     {
         return buttons.Count;
     }
 
-    var total = 0;
+    var total = 0L;
 
     foreach (var button in buttons)
     {
-        var minimal = int.MaxValue;
+        var minimal = long.MaxValue;
 
         var paths = keypads[0].Press(button);
 
