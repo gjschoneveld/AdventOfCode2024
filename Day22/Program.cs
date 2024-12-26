@@ -6,7 +6,7 @@ Console.WriteLine($"Answer 1: {answer1}");
 
 var sequencesList = seeds.Select(FindSequences).ToList();
 
-var combined = new Dictionary<(int a, int b, int c, int d), int>();
+var combined = new Dictionary<(int A, int B, int C, int D), int>();
 
 foreach (var sequences in sequencesList)
 {
@@ -20,10 +20,12 @@ foreach (var sequences in sequencesList)
 var answer2 = combined.Values.Max();
 Console.WriteLine($"Answer 2: {answer2}");
 
-Dictionary<(int a, int b, int c, int d), int> FindSequences(long number)
+Dictionary<(int A, int B, int C, int D), int> FindSequences(long number)
 {
-    var result = new Dictionary<(int a, int b, int c, int d), int>();
-    var changes = new List<int>();
+    var result = new Dictionary<(int A, int B, int C, int D), int>();
+
+    var empty = 10;
+    var sequence = (A: empty, B: empty, C: empty, D: empty);
 
     for (int i = 0; i < 2000; i++)
     {
@@ -33,21 +35,17 @@ Dictionary<(int a, int b, int c, int d), int> FindSequences(long number)
         var bananas = Bananas(number);
 
         var change = bananas - previousBananas;
-        changes.Add(change);
+        sequence = (sequence.B, sequence.C, sequence.D, change);
 
-        if (changes.Count != 4)
+        if (sequence.A == empty)
         {
             continue;
         }
-
-        var sequence = (changes[0], changes[1], changes[2], changes[3]);
 
         if (!result.ContainsKey(sequence))
         {
             result[sequence] = bananas;
         }
-
-        changes.RemoveAt(0);
     }
 
     return result;
