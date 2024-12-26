@@ -8,7 +8,7 @@ var bits = values.Count(kv => kv.Key[0] == 'x');
 var x = GetValue(values, bits, 'x');
 var y = GetValue(values, bits, 'y');
 
-var answer1 = Simulate(gates, bits, x, y);
+var answer1 = Simulate(gates, bits, x, y).Result;
 Console.WriteLine($"Answer 1: {answer1}");
 
 var swaps = new HashSet<string>();
@@ -62,10 +62,8 @@ Console.WriteLine($"Answer 2: {answer2}");
     {
         for (int y = 0; y <= max; y++)
         {
-            var values = SimulateReturnInternals(gates, bits, x * bit, y * bit);
+            var (actual, values) = Simulate(gates, bits, x * bit, y * bit);
             involved.AddRange(gates.Where(g => g.Inputs.Any(i => values[i])));
-
-            var actual = GetValue(values, bits + 1, 'z');
             var expected = (x + y) * bit;
 
             if (actual != expected)
@@ -78,14 +76,7 @@ Console.WriteLine($"Answer 2: {answer2}");
     return (success, involved.Distinct().ToList());
 }
 
-long Simulate(List<Gate> gates, int bits, long x, long y)
-{
-    var values = SimulateReturnInternals(gates, bits, x, y);
-
-    return GetValue(values, bits + 1, 'z');
-}
-
-Dictionary<string, bool> SimulateReturnInternals(List<Gate> gates, int bits, long x, long y)
+(long Result, Dictionary<string, bool> Internals) Simulate(List<Gate> gates, int bits, long x, long y)
 {
     var values = new Dictionary<string, bool>();
     SetValue(values, bits, 'x', x);
@@ -107,7 +98,7 @@ Dictionary<string, bool> SimulateReturnInternals(List<Gate> gates, int bits, lon
         }
     }
 
-    return values;
+    return (GetValue(values, bits + 1, 'z'), values);
 }
 
 void SetValue(Dictionary<string, bool> values, int bits, char symbol, long value)
