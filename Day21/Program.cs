@@ -51,12 +51,12 @@ long FindShortestPath(List<char> buttons, List<Keypad> keypads, Dictionary<(stri
 
     foreach (var button in buttons)
     {
-        var paths = keypads[0].Press(button);
+        var ways = keypads[0].Press(button);
         var minimal = long.MaxValue;
 
-        foreach (var path in paths)
+        foreach (var innerButtons in ways)
         {
-            var length = FindShortestPath(path, keypads[1..], cache);
+            var length = FindShortestPath(innerButtons, keypads[1..], cache);
             minimal = Math.Min(minimal, length);
         }
 
