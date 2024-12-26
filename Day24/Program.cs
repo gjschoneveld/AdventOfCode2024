@@ -52,7 +52,7 @@ Console.WriteLine($"Answer 2: {answer2}");
 
 (bool Success, List<Gate> InvolvedGates) Test(List<Gate> gates, int bits, int index)
 {
-    var max = Math.Min(3, bits - index);
+    var max = (1 << Math.Min(2, bits - index)) - 1;
     var bit = 1L << index;
 
     var success = true;
